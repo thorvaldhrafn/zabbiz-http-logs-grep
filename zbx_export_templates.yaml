@@ -1,0 +1,468 @@
+zabbix_export:
+  version: '6.0'
+  date: '2022-10-07T09:21:50Z'
+  groups:
+    -
+      uuid: dc579cd7a1a34222933f24f52a68bcd8
+      name: 'Linux servers'
+    -
+      uuid: 45a942839dce462ca773782a47857350
+      name: 'VPS linux servers'
+  templates:
+    -
+      uuid: c8f86d8387a645a99efcc3bf338a57fb
+      template: httpd_logs_old
+      name: 'Template nginx logs monitoring (old)'
+      groups:
+        -
+          name: 'Linux servers'
+        -
+          name: 'VPS linux servers'
+      items:
+        -
+          uuid: cad802702da3440e94814f1b8f1c542b
+          name: 'Httpd 1min accepts'
+          type: CALCULATED
+          key: httpd_logs_monit.1min_accepts
+          delay: 30s
+          params: 'last(//httpd_logs_monit[200,60])+last(//httpd_logs_monit[300,60])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: ffdfb7ae83b9460cb0e820e9e051f5fb
+          name: 'Httpd 1min errors'
+          type: CALCULATED
+          key: httpd_logs_monit.1min_errors
+          delay: 30s
+          params: 'last(//httpd_logs_monit[499,60])+last(//httpd_logs_monit[500,60])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: 3cc9b8fbb1ae4638837ca5855965b6ca
+          name: 'Httpd 1min full errors'
+          type: CALCULATED
+          key: httpd_logs_monit.1min_full_errors
+          delay: 30s
+          params: 'last(//httpd_logs_monit[400,60])+last(//httpd_logs_monit[499,60])+last(//httpd_logs_monit[500,60])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: f178683f2c304b6b86b1fc9368932adf
+          name: 'Httpd 1min total'
+          type: CALCULATED
+          key: httpd_logs_monit.1min_total
+          delay: 30s
+          params: 'last(//httpd_logs_monit[200,60])+last(//httpd_logs_monit[300,60])+last(//httpd_logs_monit[400,60])+last(//httpd_logs_monit[499,60])+last(//httpd_logs_monit[500,60])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: b6923fc8a0e54a41a6be39cdbe8d058d
+          name: 'Httpd 10min accepts'
+          type: CALCULATED
+          key: httpd_logs_monit.10min_accepts
+          delay: 5m
+          params: 'last(//httpd_logs_monit[200,600])+last(//httpd_logs_monit[300,600])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: 2c91af96bee94e0b9dd3f340993d18b7
+          name: 'Httpd 10min possible ddos'
+          type: CALCULATED
+          key: httpd_logs_monit.10min_ddospos
+          delay: 5m
+          value_type: FLOAT
+          params: '100*last(//httpd_logs_monit.10min_total)/(avg(//httpd_logs_monit.10min_total,600s:now-600s)+1)'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+          triggers:
+            -
+              uuid: 660c90ce17df46928d86710f09ec91c6
+              expression: last(/httpd_logs_old/httpd_logs_monit.10min_ddospos)>5
+              name: 'Http 10min possible ddos'
+              status: DISABLED
+              priority: HIGH
+              manual_close: 'YES'
+        -
+          uuid: cc93a05a38134014a81d240e568e071c
+          name: 'Httpd 10min errors'
+          type: CALCULATED
+          key: httpd_logs_monit.10min_errors
+          delay: 5m
+          params: 'last(//httpd_logs_monit[499,600])+last(//httpd_logs_monit[500,600])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: 0cbfa1e5c424400982c05e18c8edec55
+          name: 'Httpd 10min errors percent'
+          type: CALCULATED
+          key: httpd_logs_monit.10min_errorsperc
+          delay: 5m
+          value_type: FLOAT
+          units: '%'
+          params: '100*last(//httpd_logs_monit.10min_errors)/(last(//httpd_logs_monit.10min_accepts)+1)'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+          triggers:
+            -
+              uuid: 1d0498b972354770bd495656bf8d510b
+              expression: last(/httpd_logs_old/httpd_logs_monit.10min_errorsperc)>50
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/httpd_logs_old/httpd_logs_monit.10min_errorsperc)<50
+              name: 'Http 10min errors crit problem'
+              status: DISABLED
+              priority: HIGH
+              type: MULTIPLE
+            -
+              uuid: 176e56897c174c5baa2f7eb9c72584ce
+              expression: last(/httpd_logs_old/httpd_logs_monit.10min_errorsperc)>20
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/httpd_logs_old/httpd_logs_monit.10min_errorsperc)<20
+              name: 'Http 10min errors problem'
+              status: DISABLED
+              priority: WARNING
+              type: MULTIPLE
+        -
+          uuid: a3cf15377f9a4fc7b88c4d8fa27a388d
+          name: 'Httpd 10min full errors'
+          type: CALCULATED
+          key: httpd_logs_monit.10min_full_errors
+          delay: 5m
+          params: 'last(//httpd_logs_monit[400,600])+last(//httpd_logs_monit[499,600])+last(//httpd_logs_monit[500,600])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: 1125432d0ed84949a3a788e4d48f3c2c
+          name: 'Httpd 10min total'
+          type: CALCULATED
+          key: httpd_logs_monit.10min_total
+          delay: 5m
+          params: 'last(//httpd_logs_monit[200,600])+last(//httpd_logs_monit[300,600])+last(//httpd_logs_monit[400,600])+last(//httpd_logs_monit[499,600])+last(//httpd_logs_monit[500,600])'
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+          triggers:
+            -
+              uuid: c89e030d6c6e4420ba1084af976fd1e4
+              expression: 'nodata(/httpd_logs_old/httpd_logs_monit.10min_total,5m)=1'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'nodata(/httpd_logs_old/httpd_logs_monit.10min_total,5m)=0'
+              name: 'Http 10min No data'
+              status: DISABLED
+              priority: WARNING
+        -
+          uuid: d2cc9b24cf6543fd8937668dbcae1597
+          name: 'Httpd 1min 200s codes'
+          key: 'httpd_logs_monit[200,60]'
+          delay: 30s
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: b2fe5502223e4507b37f5bc1bf5b1783
+          name: 'Httpd 10min 200s codes'
+          key: 'httpd_logs_monit[200,600]'
+          delay: 5m
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: 749a22f6a0cf4c4d8b678e3ba7ef7388
+          name: 'Httpd 1min 300s codes'
+          key: 'httpd_logs_monit[300,60]'
+          delay: 30s
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: e521ce2fd4604f629bf7409f8a0cd6a5
+          name: 'Httpd 10min 300s codes'
+          key: 'httpd_logs_monit[300,600]'
+          delay: 5m
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: f5d846e0938349fd88ae76211b6f55e1
+          name: 'Httpd 1min 400s codes'
+          key: 'httpd_logs_monit[400,60]'
+          delay: 30s
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: ab6d105a77244b3c81a1fda129ba2fd3
+          name: 'Httpd 10min 400s codes'
+          key: 'httpd_logs_monit[400,600]'
+          delay: 5m
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: ed4860995b454d04930e70d73fc5d36d
+          name: 'Httpd 1min 499s codes'
+          key: 'httpd_logs_monit[499,60]'
+          delay: 30s
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: ab4479c8a45741ab8f21ffdd7af68338
+          name: 'Httpd 10min 499s codes'
+          key: 'httpd_logs_monit[499,600]'
+          delay: 5m
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: 2d3105284cd847d8ad992e4193e5ce9d
+          name: 'Httpd 1min 500s codes'
+          key: 'httpd_logs_monit[500,60]'
+          delay: 30s
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+        -
+          uuid: 217c7bf766ab4e23a71a0b9a7ae341ab
+          name: 'Httpd 10min 500s codes'
+          key: 'httpd_logs_monit[500,600]'
+          delay: 5m
+          request_method: POST
+          tags:
+            -
+              tag: Application
+              value: 'Httpd logs monitoring'
+      dashboards:
+        -
+          uuid: d76db0003c5d4565899201d1c60c9234
+          name: 'Nginx logs monitoring (old)'
+          pages:
+            -
+              widgets:
+                -
+                  type: GRAPH_CLASSIC
+                  width: '19'
+                  height: '9'
+                  fields:
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        host: httpd_logs_old
+                        name: 'Httpd 10min codes'
+  graphs:
+    -
+      uuid: f7bbb02351e841e796c8c1b3921536cb
+      name: 'Httpd 1min 500 codes'
+      graph_items:
+        -
+          drawtype: BOLD_LINE
+          color: FF0000
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[500,60]'
+    -
+      uuid: 56bc0a79948d4b77b0d105c592f469b9
+      name: 'Httpd 1min codes'
+      graph_items:
+        -
+          drawtype: FILLED_REGION
+          color: '006600'
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.1min_accepts
+        -
+          sortorder: '1'
+          drawtype: FILLED_REGION
+          color: EEEE00
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.1min_errors
+        -
+          sortorder: '2'
+          drawtype: BOLD_LINE
+          color: 00DD00
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[200,60]'
+        -
+          sortorder: '3'
+          drawtype: BOLD_LINE
+          color: 0000CC
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[300,60]'
+        -
+          sortorder: '4'
+          drawtype: BOLD_LINE
+          color: DD0000
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[400,60]'
+        -
+          sortorder: '5'
+          drawtype: BOLD_LINE
+          color: A54F10
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[499,60]'
+        -
+          sortorder: '6'
+          drawtype: BOLD_LINE
+          color: '770000'
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[500,60]'
+        -
+          sortorder: '7'
+          drawtype: DASHED_LINE
+          color: 6666FF
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.1min_total
+        -
+          sortorder: '8'
+          drawtype: DASHED_LINE
+          color: '990099'
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.1min_full_errors
+    -
+      uuid: e675c767742743a88f513407a0a7851b
+      name: 'Httpd 10min codes'
+      graph_items:
+        -
+          drawtype: FILLED_REGION
+          color: '006600'
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.10min_accepts
+        -
+          sortorder: '1'
+          drawtype: FILLED_REGION
+          color: EEEE00
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.10min_errors
+        -
+          sortorder: '2'
+          drawtype: BOLD_LINE
+          color: 00DD00
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[200,600]'
+        -
+          sortorder: '3'
+          drawtype: BOLD_LINE
+          color: 0000CC
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[300,600]'
+        -
+          sortorder: '4'
+          drawtype: BOLD_LINE
+          color: DD0000
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[400,600]'
+        -
+          sortorder: '5'
+          drawtype: BOLD_LINE
+          color: A54F10
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[499,600]'
+        -
+          sortorder: '6'
+          drawtype: BOLD_LINE
+          color: '770000'
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: 'httpd_logs_monit[500,600]'
+        -
+          sortorder: '7'
+          drawtype: DASHED_LINE
+          color: 6666FF
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.10min_total
+        -
+          sortorder: '8'
+          drawtype: DASHED_LINE
+          color: '990099'
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.10min_full_errors
+    -
+      uuid: 5f41be8a7e2545cb8eff983f0279316b
+      name: 'Httpd 10min errors percent'
+      ymax_type_1: FIXED
+      graph_items:
+        -
+          drawtype: DASHED_LINE
+          color: FF3333
+          calc_fnc: ALL
+          item:
+            host: httpd_logs_old
+            key: httpd_logs_monit.10min_errorsperc
